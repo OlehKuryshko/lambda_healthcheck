@@ -18,7 +18,7 @@ data "archive_file" "arch" {
 
 resource "aws_lambda_function" "healthcheck" {
   filename         = "handler-arch.zip"
-  function_name    = "healthcheck_lambda"
+  function_name    = "milan-test1"
   role             = var.lambda_role
   handler          = "handler.healthcheck"
   source_code_hash = data.archive_file.arch.output_base64sha256
@@ -42,7 +42,7 @@ resource "aws_cloudwatch_event_rule" "every_five_minutes" {
 
 resource "aws_cloudwatch_event_target" "checkhealth_every_five_minutes" {
   rule      = aws_cloudwatch_event_rule.every_five_minutes.name
-  target_id = "check_fun"
+  target_id = "check_foo"
   arn       = aws_lambda_function.healthcheck.arn
 }
 

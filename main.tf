@@ -1,4 +1,3 @@
-
 provider "aws" {
   version = "~> 3.0"
   region  = var.aws_region
@@ -16,6 +15,10 @@ module "security" {
 
 module "policy" {
   source        = "./policy"
+}
+
+module "dynamodb" {
+  source        = "./dynamodb"
 }
 
 module "lambda" {
