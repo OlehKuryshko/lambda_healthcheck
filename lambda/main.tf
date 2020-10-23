@@ -18,9 +18,9 @@ data "archive_file" "arch" {
 
 resource "aws_lambda_function" "healthcheck" {
   filename         = "handler-arch.zip"
-  function_name    = "milan-test1"
+  function_name    = "milan-test"
   role             = var.lambda_role
-  handler          = "handler.healthcheck"
+  handler          = "elastic_handler.lambda_handler"
   source_code_hash = data.archive_file.arch.output_base64sha256
   runtime          = "python3.7"
   vpc_config {

@@ -154,6 +154,28 @@ resource "aws_iam_policy" "ses_policy" {
   EOF
 }
 
+resource "aws_iam_policy" "ec2_policy" {
+  name        = "milan-lec2-policy"
+  description = "EC2 policy for lambda"
+
+  policy = <<EOF
+{
+   "Version": "2012-10-17",
+   "Statement": [{
+      "Effect": "Allow",
+      "Action": [
+         "ec2:DescribeInstances", 
+         "ec2:DescribeImages",
+         "ec2:DescribeTags", 
+         "ec2:DescribeSnapshots"
+      ],
+      "Resource": "*"
+   }
+   ]
+}
+  EOF
+}
+
 resource "aws_iam_role_policy_attachment" "vpc-attach" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = aws_iam_policy.vpc_policy.arn
@@ -177,4 +199,9 @@ resource "aws_iam_role_policy_attachment" "sns-attach" {
 resource "aws_iam_role_policy_attachment" "ses-attach" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = aws_iam_policy.ses_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ec2-attach" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.ec2_policy.arn
 }
