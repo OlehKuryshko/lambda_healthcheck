@@ -212,19 +212,3 @@ resource "aws_iam_role_policy_attachment" "ec2-attach" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = aws_iam_policy.ec2_policy.arn
 }
-
-
-
-
-
-
-
-
-# resource "aws_iam_role_policy_attachment" "full_lambda_attach" {
-#   role       = aws_iam_role.lambda_role.name
-#   policy_arn = "arn:aws:iam::aws:policy/AWSLambdaFullAccess"
-# }
-# resource "aws_iam_role_policy_attachment" "execution_lambda_attach" {
-#   role       = aws_iam_role.lambda_role.name
-#   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-# }
