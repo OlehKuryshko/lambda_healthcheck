@@ -1,0 +1,1 @@
+![schema](./task3.png)

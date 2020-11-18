@@ -1,7 +1,6 @@
 variable "private_subnet" {
   default = ""
 }
-
 variable "private_sg" {
   default = ""
 }
@@ -12,25 +11,28 @@ variable "lambda_role" {
 
 data "archive_file" "arch" {
   type        = "zip"
-  source_file = "handler.py"
-  output_path = "handler-arch.zip"
+  source_file = "function.py"
+  output_path = "function.zip"
 }
 
 resource "aws_lambda_function" "healthcheck" {
-  filename         = "handler-arch.zip"
-  function_name    = "milan-test"
+  filename         = "function.zip"
+  function_name    = "oleh-test"
   role             = var.lambda_role
-  handler          = "elastic_handler.lambda_handler"
+  handler          = "function.lambda_handler"
   source_code_hash = data.archive_file.arch.output_base64sha256
   runtime          = "python3.7"
+  timeout          = "30"
+  memory_size      = 256
+  
   vpc_config {
     subnet_ids         = [var.private_subnet]
     security_group_ids = [var.private_sg]
   }
 
   tags = {
-    name  = "milan-healthcheck-lambda"
-    Owner = "mmel2"
+    name  = "oleh-healthcheck-lambda"
+    Owner = "okury"
   }
 }
 

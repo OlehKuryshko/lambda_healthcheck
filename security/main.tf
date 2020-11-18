@@ -1,9 +1,12 @@
 variable "vpc_parameter" {
   default = ""
 }
+variable "owner" {
+  default = ""
+}
 
 resource "aws_security_group" "public" {
-  vpc_id = var.vpc_parameter.vpc_id
+  vpc_id = var.vpc_parameter
 
   ingress {
     from_port   = 80
@@ -21,12 +24,12 @@ resource "aws_security_group" "public" {
 
   tags = {
     Name  = "lambda-public-sg"
-    Owner = "mmel2"
+    Owner = var.owner
   }
 }
 
 resource "aws_security_group" "private" {
-  vpc_id = var.vpc_parameter.vpc_id
+  vpc_id = var.vpc_parameter
 
   ingress {
     from_port       = 80
@@ -44,6 +47,6 @@ resource "aws_security_group" "private" {
 
   tags =  {
     Name  = "lambda-private-sg"
-    Owner = "mmel2"
+    Owner = var.owner
   }
 }

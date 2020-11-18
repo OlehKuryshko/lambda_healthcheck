@@ -8,11 +8,11 @@ from datetime import datetime
 _return = []
     
 def send_email(url, log):
-    name = 'Milan'
-    source = 'mmel2@softserveinc.com'
+    name = 'Mike Jordan'
+    source = 'sourse_email'
     subject = "Lambda Healthcheck Notification"
     message = "Server with following url is down: " + url + '\n'
-    destination = "milanmelnykov@gmail.com"
+    destination = "destination_email"
     _message = "Message from: " + name + "\nEmail: " + source + "\nReason: " + message + "\nLogs:\n" + str(log).replace('\\n', '\n')
 
     client = boto3.client('ses')
@@ -35,6 +35,13 @@ def send_email(url, log):
         },
         Source = source,
     )
+
+def fake_checklist():
+    checklist = []
+    checklist.append('https://www.google.com/')
+    checklist.append('http://greencity.azurewebsites.net/')
+    checklist.append('http://fakeone')
+    return checklist
 
 def get_table_urls(table):
     table_urls = []
@@ -75,21 +82,13 @@ def update_table(checklist, table):
     for url in old_urls:
         delete_old_urls(old_urls,table)
 
-def get_elastic_urls(ec2_ob,fv):
-    f={"Name":"tag:Env" , "Values": [fv]}
-    hosts=[]
-    for each_in in ec2_ob.instances.filter(Filters=[f]):
-        hosts.append(each_in.private_ip_address)
-    return hosts
-    
-def elastic_healthcheck(checklist, table):
-    _status_code = 0
+
+def healthcheck(checklist, table):
     for url in checklist:
         try:
-            r = requests.get('http://' + url + ':9200/_cluster/health?pretty=true', timeout=5)
-            _status_code = r.status_code
-            if _status_code < 400:
-                print(url + ' is ok, setting FailedChecks to 0')
+            r = requests.get(url, timeout=5)
+            if r.status_code < 400:
+                print(url + ' is ok (healthy), setting FailedChecks to 0')
                 table.update_item(
                     Key={
                         'Address': url
@@ -103,17 +102,14 @@ def elastic_healthcheck(checklist, table):
                 _return.append({
                     'datetime': str(datetime.now()),
                     'url' : url,
-                    'statusCode': _status_code,
-                    # 'body': json.dumps(r.text)
-                    'body': r.text
+                    'statusCode': r.status_code,
+                    'body': json.dumps(r.text)
                 })
-                _status_code = 0
             else:
                 raise requests.exceptions.ConnectionError
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-            # global _status_code
             log = []
-            print(url + ' is not ok, incremetning FailedChecks')
+            print(url + ' is not ok (unhealthy), incremetning FailedChecks')
             failedHealthChecks = table.update_item(
                 Key={
                     'Address': url
@@ -124,38 +120,37 @@ def elastic_healthcheck(checklist, table):
                 },
                 ReturnValues="UPDATED_NEW"
             )
-            if(_status_code == 0):
+            if(r.status_code == 0):
                 log = {
                     'datetime': str(datetime.now()),
                     'url' : url,
-                    'body': json.dumps("Failed connect to " + url + ":9200; Connection refused") 
+                    'body': json.dumps("Failed connect to " + url + "; Connection refused") 
                 }
                 _return.append(log)
             else:
                 log = {
                     'datetime': str(datetime.now()),
                     'url' : url,
-                    'statusCode': _status_code,
-                    # 'body': json.dumps(r.text)
+                    'statusCode': r.status_code,
                     'body': r.text
                 }
                 _return.append(log)
-                _status_code == 0
+                r.status_code == 0
             if failedHealthChecks['Attributes']['FailedChecks'] >= 3:
                 print("####################################################")
                 print("server " + url  + " is down, sending email ...")
-                print(_status_code)
+                print(r.status_code)
                 print("####################################################")
                 send_email(url, log)
-
+                
 def lambda_handler(event, context):
 
-    table = boto3.resource('dynamodb', region_name='us-east-1').Table('milan-lambda-table')
+   
+    table = boto3.resource('dynamodb', region_name='us-west-2').Table('oleh-lambda-table')
     
-    elasticsearch_url_list=get_elastic_urls(boto3.resource("ec2","us-east-1"),'mielasticsearch')
+    checklist = fake_checklist()
+    update_table(checklist, table)
     
-    update_table(elasticsearch_url_list, table)
-
-    elastic_healthcheck(elasticsearch_url_list, table) 
-
-    return _return
+    healthcheck(checklist, table)      
+    
+    return json.dumps(_return)

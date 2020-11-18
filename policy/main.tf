@@ -1,5 +1,5 @@
 resource "aws_iam_role" "lambda_role" {
-  name = "milan-lambda-healthcheck"
+  name = "oleh-lambda-healthcheck"
 
   assume_role_policy = <<EOF
 {
@@ -19,7 +19,7 @@ EOF
 }
 
 resource "aws_iam_policy" "vpc_policy" {
-  name        = "milan-lvpc-policy"
+  name        = "oleh-vpc-policy"
   description = "VPC policy for lambda"
 
   policy = <<EOF
@@ -31,7 +31,13 @@ resource "aws_iam_policy" "vpc_policy" {
             "Action": [
                 "ec2:CreateNetworkInterface", 
                 "ec2:DescribeNetworkInterfaces",
-                "ec2:DeleteNetworkInterface"
+                "ec2:DeleteNetworkInterface",
+                "ec2:AssignPrivateIpAddresses",
+                "ec2:AttachNetworkInterface", 
+                "ec2:UnassignPrivateIpAddresses",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeVpcs"
             ],
             "Resource": "*"
         }
@@ -41,7 +47,7 @@ resource "aws_iam_policy" "vpc_policy" {
 }
 
 resource "aws_iam_policy" "lambda_basic_policy" {
-  name        = "milan-lbasic-policy"
+  name        = "oleh-basic-policy"
   description = "Basic policy for lambda"
 
   policy = <<EOF
@@ -63,7 +69,7 @@ resource "aws_iam_policy" "lambda_basic_policy" {
 }
 
 resource "aws_iam_policy" "dynamodb_policy" {
-  name        = "milan-ldynamodb-policy"
+  name        = "oleh-dynamodb-policy"
   description = "dynamodb policy for lambda"
 
   policy = <<EOF
@@ -115,7 +121,7 @@ resource "aws_iam_policy" "dynamodb_policy" {
 }
 
 resource "aws_iam_policy" "sns_policy" {
-  name        = "milan-lsns-policy"
+  name        = "oleh-sns-policy"
   description = "SNS policy for lambda"
 
   policy = <<EOF
@@ -135,7 +141,7 @@ resource "aws_iam_policy" "sns_policy" {
 }
 
 resource "aws_iam_policy" "ses_policy" {
-  name        = "milan-lses-policy"
+  name        = "oleh-ses-policy"
   description = "SES policy for lambda"
 
   policy = <<EOF
@@ -145,7 +151,8 @@ resource "aws_iam_policy" "ses_policy" {
         {
             "Effect": "Allow",
             "Action": [
-                "ses:*"
+                "ses:SendEmail",
+                "ses:SendRawEmail"
             ],
             "Resource": "*"
         }
@@ -155,7 +162,7 @@ resource "aws_iam_policy" "ses_policy" {
 }
 
 resource "aws_iam_policy" "ec2_policy" {
-  name        = "milan-lec2-policy"
+  name        = "oleh-ec2-policy"
   description = "EC2 policy for lambda"
 
   policy = <<EOF
@@ -205,3 +212,19 @@ resource "aws_iam_role_policy_attachment" "ec2-attach" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = aws_iam_policy.ec2_policy.arn
 }
+
+
+
+
+
+
+
+
+# resource "aws_iam_role_policy_attachment" "full_lambda_attach" {
+#   role       = aws_iam_role.lambda_role.name
+#   policy_arn = "arn:aws:iam::aws:policy/AWSLambdaFullAccess"
+# }
+# resource "aws_iam_role_policy_attachment" "execution_lambda_attach" {
+#   role       = aws_iam_role.lambda_role.name
+#   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+# }
